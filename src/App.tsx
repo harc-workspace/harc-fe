@@ -1,16 +1,8 @@
-import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty"
+import { RouterProvider } from '@tanstack/react-router';
+import { router } from '@/router';
 
 function App() {
-  return (
-    <Empty>
-      <EmptyHeader>
-        <EmptyTitle>404 - Not Found</EmptyTitle>
-        <EmptyDescription>
-          Bu sayfa yapım aşamasında. Lütfen daha sonra tekrar deneyin.
-        </EmptyDescription>
-      </EmptyHeader>
-    </Empty>
-  )
+  return <RouterProvider router={router} />;
 }
 
-export default App
+export default App;
