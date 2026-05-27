@@ -13,10 +13,13 @@ export function useLoginMutation() {
     onMutate: () => {
       setIsLoading(true);
     },
-    onSuccess: (data: AuthResponse) => {
-      // NO optimistic update - sunucudan gelen data'yı direkt set et
+    onSuccess: (data: AuthResponse, googleCredential: string) => {
+      // Store the Google credential (not the JWT response)
+      // This is the persistent credential that will be used to call getMe on future sessions
+      setToken(googleCredential);
+      
+      // Update user data from server response
       setUser(data.user);
-      setToken(data.token);
       setIsLoading(false);
     },
     onError: () => {
@@ -24,6 +27,7 @@ export function useLoginMutation() {
     },
   });
 }
+
 
 export function useLogoutMutation() {
   const { setUser, setToken, setIsLoading } = useAuth();

@@ -1,8 +1,8 @@
 'use client';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Outlet } from '@tanstack/react-router';
-import { AuthProvider } from '@/contexts/AuthContext';
+import { AuthProvider } from '@/contexts/AuthContext.tsx';
+import { AppInit } from '@/components/AppInit';
 
 // Create a client for React Query
 const queryClient = new QueryClient({
@@ -19,7 +19,7 @@ export function RootLayout() {
     <AuthProvider>
       <QueryClientProvider client={queryClient}>
         <div className="min-h-screen">
-          <Outlet />
+          <AppInit />
         </div>
       </QueryClientProvider>
     </AuthProvider>

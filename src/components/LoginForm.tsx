@@ -1,57 +1,61 @@
 'use client';
 
-import { useActionState } from 'react';
+import type { CredentialResponse } from '@react-oauth/google';
+import { GoogleLogin } from '@react-oauth/google';
 import { useLoginMutation } from '@/hooks/useAuthMutations';
 import { useAuth } from '@/hooks/useAuth';
-
-async function loginAction(
-  _prevState: { error?: string } | null,
-  formData: FormData
-) {
-  // Form'dan credential al
-  const credential = formData.get('googleCredential') as string;
-
-  if (!credential) {
-    return { error: 'Google credential is required' };
-  }
-
-  return { success: true, credential };
-}
+import { useNavigate } from '@tanstack/react-router';
 
 export function LoginForm() {
   const { isLoading } = useAuth();
   const loginMutation = useLoginMutation();
-  const [state, formAction] = useActionState(loginAction, null);
+  const navigate = useNavigate();
 
-  const isSubmitting = isLoading || loginMutation.isPending;
+  const handleGoogleSuccess = async (credentialResponse: CredentialResponse) => {
+    if (!credentialResponse.credential) {
+      return;
+    }
+
+    try {
+      // Send Google JWT token to backend
+      await loginMutation.mutateAsync(credentialResponse.credential);
+
+      // Login başarılı olursa dashboard'a yönlendir
+      navigate({ to: '/dashboard' });
+    } catch (error) {
+      console.error('Login error:', error);
+      // Hata handling - mutation.error'da gösterilir
+    }
+  };
+
+  const handleGoogleError = () => {
+    console.error('Google login failed');
+  };
 
   return (
-    <form action={formAction} className="flex flex-col gap-4">
-      {/* Hidden input for Google credential */}
-      <input
-        type="hidden"
-        name="googleCredential"
-        defaultValue="mock-google-credential"
-        id="googleCredential"
-      />
-
-      {state?.error && (
-        <div className="text-red-600 text-sm">{state.error}</div>
-      )}
-
+    <div className="flex flex-col gap-4">
       {loginMutation.error && (
-        <div className="text-red-600 text-sm">
-          Login failed: {loginMutation.error.message}
+        <div className="text-red-600 text-sm bg-red-50 p-3 rounded border border-red-200">
+          {loginMutation.error instanceof Error
+            ? loginMutation.error.message
+            : 'Login failed. Please try again.'}
         </div>
       )}
 
-      <button
-        type="submit"
-        disabled={isSubmitting}
-        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        {isSubmitting ? 'Logging in...' : 'Login with Google'}
-      </button>
-    </form>
+      <div className="flex justify-center">
+        <GoogleLogin
+          onSuccess={handleGoogleSuccess}
+          onError={handleGoogleError}
+          text="signin_with"
+          size="large"
+        />
+      </div>
+
+      {isLoading && (
+        <div className="text-center text-sm text-gray-600">
+          Authenticating...
+        </div>
+      )}
+    </div>
   );
 }

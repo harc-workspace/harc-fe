@@ -17,6 +17,13 @@ export interface AuthContextType {
   setIsLoading: (loading: boolean) => void;
 }
 
+export interface MeResponse {
+  message: string;
+  internalUserId: string;
+  userEmail: string;
+  assignedRole: UserRole;
+}
+
 export interface AuthResponse {
   token: string;
   user: User;

@@ -10,7 +10,7 @@ import { NotFoundPage } from '@/pages/NotFoundPage';
  */
 function getStoredAuthState() {
   try {
-    const token = localStorage.getItem('auth_token');
+    const token = localStorage.getItem('google_id_token');
     const userJson = localStorage.getItem('auth_user');
     const user = userJson ? JSON.parse(userJson) : null;
     return { token, user };

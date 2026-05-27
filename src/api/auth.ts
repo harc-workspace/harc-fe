@@ -1,52 +1,57 @@
-import type { AuthResponse, User } from '@/types/auth';
+import type { AuthResponse, MeResponse, User } from '@/types/auth';
+import { apiClient } from './client';
 
 /**
- * Mock Google OAuth login
- * Backend ready olunca: POST /api/auth/google ile değiştirilecek
- * Backend response formatı: { token: string, user: User }
+ * Get user identity with Google OAuth token
+ * 
+ * Flow:
+ * 1. Kullanıcı Google'dan token alır
+ * 2. React uygulaması GET /api/identity/me'ye token ile istek atar
+ * 3. Gateway token'ı doğrular ve backend'e iletir
+ * 4. Backend HRClaimsTransformation ile kullanıcıyı veritabanına kaydeder (ilk giriş) veya mevcut kullanıcıyı döndürür
+ * 5. Response: { message, internalUserId, userEmail, assignedRole }
+ * 
+ * @param googleToken - Google OAuth id_token
+ * @returns AuthResponse { token: string, user: User }
+ * @throws Error if request fails or gateway returns error
  */
-export async function loginWithGoogle(_googleCredential: string): Promise<AuthResponse> {
-  // TODO: Backend Google OAuth endpoint'ine bağlan
-  // const response = await fetch(`${API_BASE_URL}/auth/google`, {
-  //   method: 'POST',
-  //   headers: { 'Content-Type': 'application/json' },
-  //   body: JSON.stringify({ credential: googleCredential }),
-  // });
-  // return response.json();
-
-  // Mock response - backend hazırlanırken test için
-  const mockUser: User = {
-    id: 'mock-user-123',
-    email: 'user@workspace.google.com',
-    fullName: 'Mock User',
-    role: 'Employee',
-    avatarUrl: 'https://lh3.googleusercontent.com/a/default-user',
-  };
-
-  const mockToken = 'mock-jwt-token-' + Date.now();
-
-  // Simulate network delay
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-
-  return {
-    token: mockToken,
-    user: mockUser,
-  };
+export async function loginWithGoogle(googleToken: string): Promise<AuthResponse> {
+  try {
+    const response = await apiClient.get<MeResponse>(
+      '/api/identity/me',
+      googleToken
+    );
+    
+    // Transform backend response to AuthResponse format
+    const user: User = {
+      id: response.internalUserId,
+      email: response.userEmail,
+      fullName: response.userEmail.split('@')[0], // Use email prefix as fullName for now
+      role: response.assignedRole,
+      avatarUrl: null,
+    };
+    
+    const authResponse: AuthResponse = {
+      token: googleToken, // Use Google token as the auth token
+      user,
+    };
+    
+    return authResponse;
+  } catch (error) {
+    console.error('Google login failed:', error);
+    throw error;
+  }
 }
 
 /**
- * Logout - server-side işlemi temizle
- * Backend ready olunca: POST /api/auth/logout
+ * Logout - Clear authentication state on client side
+ * 
+ * Note: Since Google tokens are stateless, we only need to clear localStorage.
+ * The gateway/backend doesn't require explicit logout endpoint call.
+ * Token will naturally expire (Google tokens typically expire after 1 hour).
  */
 export async function logout(): Promise<void> {
-  // TODO: Backend logout endpoint'ine bağlan
-  // const response = await fetch(`${API_BASE_URL}/auth/logout`, {
-  //   method: 'POST',
-  //   headers: {
-  //     'Authorization': `Bearer ${token}`,
-  //   },
-  // });
-
-  // Mock logout
+  // Client-side logout: localStorage is managed by AuthContext
+  // No backend call needed for stateless Google token-based auth
   await new Promise((resolve) => setTimeout(resolve, 500));
 }
