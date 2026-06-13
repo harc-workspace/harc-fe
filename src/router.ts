@@ -1,7 +1,12 @@
 import { createRouter, RootRoute, Route, redirect } from '@tanstack/react-router';
 import { RootLayout } from '@/layouts/RootLayout';
 import { LoginPage } from '@/pages/LoginPage';
-import { DashboardPage } from '@/pages/DashboardPage';
+import { DashboardLayout } from '@/layouts/DashboardLayout';
+import { HomePage } from '@/pages/dashboard/HomePage';
+import { ProfilePage } from '@/pages/dashboard/ProfilePage';
+import { TimeOffPage } from '@/pages/dashboard/TimeOffPage';
+import { PayrollPage } from '@/pages/dashboard/PayrollPage';
+import { DocumentsPage } from '@/pages/dashboard/DocumentsPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 
 /**
@@ -24,6 +29,22 @@ const rootRoute = new RootRoute({
   component: RootLayout,
 });
 
+// Root route - decide where the app should start
+const homeRoute = new Route({
+  getParentRoute: () => rootRoute,
+  path: '/',
+  beforeLoad: () => {
+    const { user, token } = getStoredAuthState();
+
+    if (user && token) {
+      throw redirect({ to: '/dashboard' });
+    }
+
+    throw redirect({ to: '/login' });
+  },
+  component: () => null,
+});
+
 // Login route - public
 const loginRoute = new Route({
   getParentRoute: () => rootRoute,
@@ -35,7 +56,7 @@ const loginRoute = new Route({
 const dashboardRoute = new Route({
   getParentRoute: () => rootRoute,
   path: '/dashboard',
-  component: DashboardPage,
+  component: DashboardLayout,
   beforeLoad: ({ location }) => {
     // Check authentication from localStorage
     const { user, token } = getStoredAuthState();
@@ -59,6 +80,45 @@ const dashboardRoute = new Route({
   },
 });
 
+const dashboardHomeRoute = new Route({
+  getParentRoute: () => dashboardRoute,
+  path: 'home',
+  component: HomePage,
+});
+
+const dashboardProfileRoute = new Route({
+  getParentRoute: () => dashboardRoute,
+  path: 'profile',
+  component: ProfilePage,
+});
+
+const dashboardTimeOffRoute = new Route({
+  getParentRoute: () => dashboardRoute,
+  path: 'time-off',
+  component: TimeOffPage,
+});
+
+const dashboardPayrollRoute = new Route({
+  getParentRoute: () => dashboardRoute,
+  path: 'payroll',
+  component: PayrollPage,
+});
+
+const dashboardDocumentsRoute = new Route({
+  getParentRoute: () => dashboardRoute,
+  path: 'documents',
+  component: DocumentsPage,
+});
+
+const dashboardIndexRoute = new Route({
+  getParentRoute: () => dashboardRoute,
+  path: '/',
+  beforeLoad: () => {
+    throw redirect({ to: '/dashboard/home' });
+  },
+  component: () => null,
+});
+
 // Catch-all 404 route
 const notFoundRoute = new Route({
   getParentRoute: () => rootRoute,
@@ -66,8 +126,17 @@ const notFoundRoute = new Route({
   component: NotFoundPage,
 });
 
+const dashboardTree = dashboardRoute.addChildren([
+  dashboardIndexRoute,
+  dashboardHomeRoute,
+  dashboardProfileRoute,
+  dashboardTimeOffRoute,
+  dashboardPayrollRoute,
+  dashboardDocumentsRoute,
+]);
+
 // Create the route tree
-const routeTree = rootRoute.addChildren([loginRoute, dashboardRoute, notFoundRoute]);
+const routeTree = rootRoute.addChildren([homeRoute, loginRoute, dashboardTree, notFoundRoute]);
 
 // Create and export the router
 export const router = createRouter({

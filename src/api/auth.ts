@@ -28,6 +28,7 @@ export async function loginWithGoogle(googleToken: string): Promise<AuthResponse
       email: response.userEmail,
       fullName: response.userEmail.split('@')[0], // Use email prefix as fullName for now
       role: response.assignedRole,
+      roleDisplayName: response.assignedRoleDisplayName,
       avatarUrl: null,
     };
     

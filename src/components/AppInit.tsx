@@ -1,4 +1,5 @@
 import { Outlet } from '@tanstack/react-router';
+import { useTranslation } from 'react-i18next';
 import { useGetMe } from '@/hooks/useGetMe';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -15,16 +16,17 @@ import { useAuth } from '@/hooks/useAuth';
  */
 export function AppInit() {
   const { token } = useAuth();
-  const { isLoading, isError, isPending } = useGetMe();
+  const { isError, isPending } = useGetMe();
+  const { t } = useTranslation();
 
   // If there's a token, validate it (useGetMe is running)
-  if (token && (isLoading || isPending)) {
+  if (token && isPending) {
     // Show loading state while validating token
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4" />
-          <p className="text-gray-600">Validating session...</p>
+            <p className="text-gray-600">{t('appInit.validatingSession')}</p>
         </div>
       </div>
     );
@@ -35,7 +37,7 @@ export function AppInit() {
   if (token && isError) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <p className="text-red-600">Redirecting to login...</p>
+        <p className="text-red-600">{t('appInit.redirectingToLogin')}</p>
       </div>
     );
   }

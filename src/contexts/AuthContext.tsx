@@ -1,8 +1,14 @@
 'use client';
 
-import { useState, type ReactNode } from 'react';
+import { createContext, useState, type ReactNode } from 'react';
 import type { User } from '@/types/auth';
-import { AuthContext } from './authContext';
+
+export const AuthContext = createContext<{
+  user: User | null;
+  setUser: (user: User | null) => void;
+  token: string | null;
+  setToken: (token: string | null) => void;
+} | undefined>(undefined);
 
 const persistToken = (token: string | null) => {
   try {
@@ -48,7 +54,6 @@ const loadUser = (): User | null => {
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(loadUser);
   const [token, setToken] = useState<string | null>(loadToken);
-  const [isLoading, setIsLoading] = useState(false);
 
   const handleSetUser = (newUser: User | null) => {
     setUser(newUser);
@@ -61,7 +66,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, setUser: handleSetUser, token, setToken: handleSetToken, isLoading, setIsLoading }}>
+    <AuthContext.Provider value={{ user, setUser: handleSetUser, token, setToken: handleSetToken }}>
       {children}
     </AuthContext.Provider>
   );

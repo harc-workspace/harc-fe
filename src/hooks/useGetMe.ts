@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
+import { useNavigate } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/api/client';
 import { useAuth } from './useAuth';
-import { useAuthCleanup } from './useAuthCleanup';
 import type { MeResponse, User } from '@/types/auth';
 
 /**
@@ -18,8 +18,8 @@ import type { MeResponse, User } from '@/types/auth';
  * Used on app initialization and route changes to validate the persisted token
  */
 export function useGetMe() {
-  const { token, setUser } = useAuth();
-  const { clearAuthAndRedirect } = useAuthCleanup();
+  const navigate = useNavigate();
+  const { token, setUser, setToken } = useAuth();
 
   const query = useQuery({
     queryKey: ['auth', 'me'],
@@ -29,10 +29,7 @@ export function useGetMe() {
       }
 
       try {
-        const response = await apiClient.get<MeResponse>(
-          '/api/identity/me',
-          token
-        );
+        const response = await apiClient.get<MeResponse>('/api/identity/me', token);
 
         // Transform backend response to User format
         const user: User = {
@@ -40,7 +37,8 @@ export function useGetMe() {
           email: response.userEmail,
           fullName: response.userEmail.split('@')[0], // Use email prefix as fullName
           role: response.assignedRole,
-          avatarUrl: null,
+          roleDisplayName: response.assignedRoleDisplayName,
+          avatarUrl: response.avatar,
         };
 
         return user;
@@ -48,7 +46,9 @@ export function useGetMe() {
         // Check if it's a 401 (unauthorized/expired token)
         if (error instanceof Error && 'status' in error && error.status === 401) {
           // Token is expired or invalid
-          await clearAuthAndRedirect();
+          setToken(null);
+          setUser(null);
+          await navigate({ to: '/login' });
           throw error;
         }
         // Re-throw other errors

@@ -1,10 +1,9 @@
-export type UserRole = 'Admin' | 'Hr Manager' | 'Employee';
-
 export interface User {
   id: string; // GUID from backend database
   email: string; // Google verified email, unique login key
   fullName: string; // Display name for UI
-  role: UserRole; // RBAC
+  role: string; // RBAC
+  roleDisplayName: Record<string, string>; // Human-readable role name for UI, e.g. "Admin", "User"
   avatarUrl: string | null; // Google profile picture
 }
 
@@ -13,15 +12,15 @@ export interface AuthContextType {
   setUser: (user: User | null) => void;
   token: string | null;
   setToken: (token: string | null) => void;
-  isLoading: boolean;
-  setIsLoading: (loading: boolean) => void;
 }
 
 export interface MeResponse {
   message: string;
   internalUserId: string;
   userEmail: string;
-  assignedRole: UserRole;
+  assignedRole: string;
+  assignedRoleDisplayName: Record<string, string>;
+  avatar: string | null;
 }
 
 export interface AuthResponse {

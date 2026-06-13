@@ -48,6 +48,21 @@ function getAuthHeader(token?: string): Record<string, string> {
   };
 }
 
+function getPreferredLanguage(): 'tr' | 'en' {
+  if (typeof window === 'undefined') {
+    return 'tr';
+  }
+
+  const storedLanguage = window.localStorage.getItem('preferred_language');
+  return storedLanguage === 'en' ? 'en' : 'tr';
+}
+
+function getAcceptLanguageHeader(): Record<string, string> {
+  return {
+    'Accept-Language': getPreferredLanguage(),
+  };
+}
+
 /**
  * Make an HTTP request to the gateway API
  * 
@@ -67,6 +82,7 @@ async function request<T = Record<string, unknown>>(
   
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
+    ...getAcceptLanguageHeader(),
     ...getAuthHeader(token),
     ...options.headers,
   };

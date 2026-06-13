@@ -1,5 +1,6 @@
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { RouterProvider } from '@tanstack/react-router';
+import '@/i18n';
 import { router } from '@/router';
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;

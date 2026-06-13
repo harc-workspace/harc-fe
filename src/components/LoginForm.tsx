@@ -3,13 +3,13 @@
 import type { CredentialResponse } from '@react-oauth/google';
 import { GoogleLogin } from '@react-oauth/google';
 import { useLoginMutation } from '@/hooks/useAuthMutations';
-import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from '@tanstack/react-router';
+import { useTranslation } from 'react-i18next';
 
 export function LoginForm() {
-  const { isLoading } = useAuth();
   const loginMutation = useLoginMutation();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const handleGoogleSuccess = async (credentialResponse: CredentialResponse) => {
     if (!credentialResponse.credential) {
@@ -38,7 +38,7 @@ export function LoginForm() {
         <div className="text-red-600 text-sm bg-red-50 p-3 rounded border border-red-200">
           {loginMutation.error instanceof Error
             ? loginMutation.error.message
-            : 'Login failed. Please try again.'}
+            : t('login.errorFallback')}
         </div>
       )}
 
@@ -51,9 +51,9 @@ export function LoginForm() {
         />
       </div>
 
-      {isLoading && (
+      {loginMutation.isPending && (
         <div className="text-center text-sm text-gray-600">
-          Authenticating...
+          {t('login.authenticating')}
         </div>
       )}
     </div>
