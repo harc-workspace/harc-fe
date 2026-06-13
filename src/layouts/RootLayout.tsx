@@ -4,13 +4,13 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from '@/contexts/AuthContext.tsx';
 import { AppInit } from '@/components/AppInit';
 import { LanguageProvider } from '@/contexts/LanguageContext';
+import { ThemeProvider } from '@/contexts/ThemeContext';
 
-// Create a client for React Query
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: 1,
-      staleTime: 5 * 60 * 1000, // 5 minutes
+      staleTime: 5 * 60 * 1000,
     },
   },
 });
@@ -20,9 +20,11 @@ export function RootLayout() {
     <AuthProvider>
       <QueryClientProvider client={queryClient}>
         <LanguageProvider>
-          <div className="relative min-h-screen">
-            <AppInit />
-          </div>
+          <ThemeProvider defaultTheme="system" storageKey="harc-theme">
+            <div className="relative min-h-screen">
+              <AppInit />
+            </div>
+          </ThemeProvider>
         </LanguageProvider>
       </QueryClientProvider>
     </AuthProvider>

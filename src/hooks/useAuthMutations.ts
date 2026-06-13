@@ -30,9 +30,9 @@ export function useLogoutMutation() {
       return await logout();
     },
     onSuccess: () => {
-      // Clear auth state
       setUser(null);
       setToken(null);
+      window.location.reload();
     },
   });
 }

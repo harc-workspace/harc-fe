@@ -3,13 +3,6 @@
 import { createContext, useState, type ReactNode } from 'react';
 import type { User } from '@/types/auth';
 
-export const AuthContext = createContext<{
-  user: User | null;
-  setUser: (user: User | null) => void;
-  token: string | null;
-  setToken: (token: string | null) => void;
-} | undefined>(undefined);
-
 const persistToken = (token: string | null) => {
   try {
     if (token) {
@@ -71,3 +64,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     </AuthContext.Provider>
   );
 }
+
+// eslint-disable-next-line react-refresh/only-export-components
+export const AuthContext = createContext<{
+  user: User | null;
+  setUser: (user: User | null) => void;
+  token: string | null;
+  setToken: (token: string | null) => void;
+} | undefined>(undefined);
