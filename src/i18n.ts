@@ -10,6 +10,9 @@ const resources = {
     common: {
        settings: {
         theme: 'Theme',
+        themeLight: 'Light',   
+        themeDark: 'Dark',     
+        themeSystem: 'System', 
       },
       language: {
         label: 'Language',
@@ -70,6 +73,9 @@ const resources = {
     common: {
       settings: {
         theme: 'Tema',
+        themeLight: 'Açık',
+        themeDark: 'Koyu',
+        themeSystem: 'Sistem',
       },
       language: {
         label: 'Dil',
