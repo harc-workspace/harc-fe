@@ -1,6 +1,6 @@
 import { Outlet, useRouterState } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
-import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
+import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { DashboardSidebar } from '@/components/dashboard/DashboardSidebar';
 import { getDashboardSectionFromPath, dashboardSections } from '@/components/dashboard/dashboardSections';
 import { useAuth } from '@/hooks/useAuth';
@@ -27,13 +27,12 @@ export function DashboardLayout() {
 
       <SidebarInset>
         <div className="min-h-screen bg-background text-foreground">
-          <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-6 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between gap-4 rounded-2xl border border-border bg-card/70 px-4 py-3 shadow-sm backdrop-blur">
+          <div className="flex w-full flex-col gap-8 px-4 py-6 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between gap-4 rounded-sm border border-border bg-card/70 px-4 py-3 shadow-sm backdrop-blur">
               <div className="flex items-center gap-3">
-                <SidebarTrigger />
                 <div>
-                  <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">{t('dashboard.title')}</p>
-                  <h1 className="text-2xl font-semibold">{t(activeSectionConfig.labelKey)}</h1>
+                  <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">{t('dashboard.title')}</p>
+                  <h1 className="text-xl font-semibold">{t(activeSectionConfig.labelKey)}</h1>
                 </div>
               </div>
 

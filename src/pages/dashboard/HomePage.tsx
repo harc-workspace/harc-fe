@@ -1,59 +1,54 @@
 import { useTranslation } from 'react-i18next';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+import * as card from "@/components/ui/card"
 
 export function HomePage() {
   const { t } = useTranslation();
 
   return (
-    <div className="flex flex-col gap-6 p-6">
+    <div className="flex flex-col gap-6">
       <div className="grid grid-cols-1 md:grid-cols-[7fr_3fr] gap-6">
-        <Card className="w-full">
-          <CardHeader>
-            <CardTitle>Sol Üst Kart</CardTitle>
-            <CardDescription>%70'lik Geniş Alan</CardDescription>
-          </CardHeader>
-          <CardContent>
-            Buraya genellikle geniş veri tabloları veya zaman çizelgesi grafikleri (Line Chart) yakışır.
-          </CardContent>
-        </Card>
 
-        <Card className="w-full">
-          <CardHeader>
-            <CardTitle>Sağ Üst Kart</CardTitle>
-            <CardDescription>%30'luk Dar Alan</CardDescription>
-          </CardHeader>
-          <CardContent>
+        <card.Card className="w-full rounded-sm">
+          <card.CardHeader>
+            <card.CardTitle>Sol Üst Kart</card.CardTitle>
+            <card.CardDescription>%70'lik Geniş Alan</card.CardDescription>
+          </card.CardHeader>
+          <card.CardContent>
+            Buraya genellikle geniş veri tabloları veya zaman çizelgesi grafikleri (Line Chart) yakışır.
+          </card.CardContent>
+        </card.Card>
+
+        <card.Card className="w-full rounded-sm">
+          <card.CardHeader>
+            <card.CardTitle>Sağ Üst Kart</card.CardTitle>
+            <card.CardDescription>%30'luk Dar Alan</card.CardDescription>
+          </card.CardHeader>
+          <card.CardContent>
             Buraya "Son Aktiviteler" listesi veya bir "Pasta Grafik (Pie Chart)" ekleyebilirsiniz.
-          </CardContent>
-        </Card>
+          </card.CardContent>
+        </card.Card>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card className="w-full">
-          <CardHeader>
-            <CardTitle>Sol Alt Kart</CardTitle>
-            <CardDescription>%50'lik Yarı Alan</CardDescription>
-          </CardHeader>
-          <CardContent>
+        <card.Card className="w-full rounded-sm">
+          <card.CardHeader>
+            <card.CardTitle>Sol Alt Kart</card.CardTitle>
+            <card.CardDescription>%50'lik Yarı Alan</card.CardDescription>
+          </card.CardHeader>
+          <card.CardContent>
             Onay bekleyen izin talepleri gibi ikili listeler için idealdir.
-          </CardContent>
-        </Card>
+          </card.CardContent>
+        </card.Card>
 
-        <Card className="w-full">
-          <CardHeader>
-            <CardTitle>Sağ Alt Kart</CardTitle>
-            <CardDescription>%50'lik Yarı Alan</CardDescription>
-          </CardHeader>
-          <CardContent>
+        <card.Card className="w-full rounded-sm">
+          <card.CardHeader>
+            <card.CardTitle>Sağ Alt Kart</card.CardTitle>
+            <card.CardDescription>%50'lik Yarı Alan</card.CardDescription>
+          </card.CardHeader>
+          <card.CardContent>
             Yaklaşan doğum günleri veya şirket duyuruları yer alabilir.
-          </CardContent>
-        </Card>
+          </card.CardContent>
+        </card.Card>
       </div>
 
     </div>
