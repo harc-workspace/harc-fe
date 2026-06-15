@@ -1,50 +1,52 @@
 # HARC Frontend
 
-Bu depo, HARC projesinin React tabanlı frontend uygulamasıdır. Uygulama modern bir SPA olarak kurulmuştur; Google OAuth ile giriş yapar, token bilgisini istemci tarafında saklar ve API üzerinden kullanıcı oturumunu doğrular.
+Bu depo, HARC projesinin React tabanlı frontend uygulamasıdır. Uygulama modern bir SPA olarak kurulmuştur; Google OAuth ile giriş yapar, token bilgisini istemci tarafında saklar ve API üzerinden kullanıcı oturumunu doğrular. Temelde bir İnsan Kaynakları (HR) ve Çalışma Alanı yönetim panelidir.
 
 ## Teknoloji Özeti
 
-- React 19 — UI katmanı ve component mimarisi
-- TypeScript — Tip güvenliği ve daha kontrollü refactor süreci
-- Vite — Geliştirme sunucusu, hızlı HMR ve üretim build süreci
-- TanStack React Query — Sunucu verisi alma, cache, yeniden deneme ve session doğrulama
-- TanStack React Router — Route tanımı, korumalı sayfalar ve yönlendirme
-- Google OAuth — Kullanıcı girişi ve ID token akışı
-- react-i18next + i18next — Çok dilli UI metin yönetimi
-- Tailwind CSS 4 — Utility-first stil sistemi
-- Radix UI — Erişilebilir düşük seviyeli UI primitifleri
-- shadcn ekosistemi — Bileşen oluşturma yaklaşımı ve UI parçaları
-- lucide-react — İkon seti
-- class-variance-authority, clsx, tailwind-merge — Stil varyantları ve class birleştirme yardımcıları
-- Geist ve Inter fontları — Tipografi
+- **React 19** — UI katmanı ve component mimarisi
+- **TypeScript** — Tip güvenliği ve daha kontrollü geliştirme süreci
+- **Vite** — Geliştirme sunucusu, hızlı HMR ve üretim build süreci
+- **TanStack React Query** — Sunucu verisi alma, cache, yeniden deneme ve mutation yönetimi
+- **TanStack React Router** — Type-safe route tanımı, korumalı sayfalar ve yönlendirme
+- **Google OAuth** — Kullanıcı girişi ve ID token akışı
+- **react-i18next + i18next** — Çok dilli UI metin yönetimi (TR/EN)
+- **Tailwind CSS v4** — Utility-first stil sistemi ve yeni nesil konfigürasyon
+- **Radix UI & shadcn/ui** — Erişilebilir, özelleştirilebilir UI bileşenleri ve gelişmiş Sidebar mimarisi
+- **lucide-react** — İkon seti
+- **Geist, Inter ve Roboto** — Özel tipografi paketleri
 
-## Mimari
+## Mimari ve Katmanlar
 
-Uygulama katmanları kabaca şu şekilde ayrılmıştır:
+Uygulama katmanları sorumluluklarına göre şu şekilde ayrılmıştır:
 
 - `src/main.tsx` uygulamanın giriş noktasıdır.
-- `src/App.tsx` Google OAuth sağlayıcısını ve TanStack Router sağlayıcısını sarar.
-- `src/i18n.ts` uygulamanın çeviri kaynaklarını ve i18n başlangıç ayarlarını içerir.
-- `src/router.ts` rota ağacını tanımlar; login, dashboard ve 404 akışı burada yönetilir.
-- `src/components/AppInit.tsx` uygulama açılırken token doğrulaması ve yönlendirme öncesi hazırlığı yapar.
-- `src/contexts/AuthContext.tsx` kullanıcı ve token durumunu yönetir, bunları `localStorage` ile kalıcı hale getirir.
-- `src/contexts/LanguageContext.tsx` aktif dili saklar, `localStorage` ile eşler ve i18n motorunu senkronize eder.
-- `src/hooks/useGetMe.ts` oturum doğrulaması için API çağrısı yapar ve kullanıcı bilgisini günceller.
-- `src/api/client.ts` ortak HTTP istemcisidir; base URL, auth header ve dil header'larını burada toplar.
-- `src/api/auth.ts` Google token tabanlı giriş ve çıkış akışlarını soyutlar.
-- `src/pages/` sayfa seviyesindeki ekranları içerir.
-- `src/layouts/` uygulama yerleşimlerini barındırır.
-- `src/components/ui/` tekrar kullanılan küçük UI parçalarını içerir.
+- `src/App.tsx` Google OAuth ve TanStack Router sağlayıcılarını başlatır.
+- `src/router.ts` rota ağacını tanımlar; public (login) ve protected (dashboard) akışı burada yönetilir.
+- `src/i18n.ts` çeviri kaynaklarını barındırır ve i18n başlangıç ayarlarını içerir.
+
+### Context (Durum Yönetimi)
+- `src/contexts/AuthContext.tsx`: Kullanıcı ve token durumunu yönetir, `localStorage` ile kalıcı hale getirir.
+- `src/contexts/LanguageContext.tsx`: Aktif dili saklar, HTML `lang` niteliği ve i18next ile senkronize çalışır.
+- `src/contexts/ThemeContext.tsx`: Koyu (Dark), Açık (Light) ve Sistem temalarını yönetir. FOUC (stil parlaması) sorununu engellemek için `index.html`'deki inline script ile entegre çalışır.
+
+### API ve Veri Akışı
+- `src/api/client.ts`: Ortak HTTP istemcisidir. Base URL, Bearer Auth header'ı ve kullanıcı diline göre `Accept-Language` header'ını merkezi olarak enjekte eder.
+- `src/api/auth.ts`: Google token tabanlı giriş ve çıkış akışlarını backend ile haberleşerek soyutlar.
+- `src/hooks/useGetMe.ts`: Uygulama açıldığında veya sayfa değiştiğinde mevcut token'ın geçerliliğini doğrular. 401 Unauthorized durumunda oturumu temizler.
+- `src/hooks/useAuthMutations.ts`: Giriş ve çıkış işlemlerinin (mutations) yüklenme (loading) ve hata durumlarını yönetir.
+- `src/components/AppInit.tsx`: `useGetMe` hook'unu dinleyerek, uygulama açılırken yetki doğrulamasının bitmesini bekler ve gerekli yönlendirmeleri yapar.
 
 ## Routing
 
-Bu projede yönlendirme için React Router yerine TanStack React Router kullanılır. Route'lar kod içinde oluşturulur ve korumalı sayfalar `beforeLoad` kontrolü ile erişim doğrulamasından geçirilir. Bu yaklaşım, rota mantığını uygulama koduyla birlikte tutar ve type-safe route yapısı sağlar.
+Yönlendirme için TanStack React Router kullanılır. Route'lar kod içinde oluşturulur ve korumalı sayfalar `beforeLoad` metodu ile erişim doğrulamasından (Auth Guard) geçirilir.
 
 Örnek rota yapısı:
-
-- `/login` — herkese açık giriş sayfası
-- `/dashboard` — kimlik doğrulaması gerektiren alan
-- `*` — bulunamayan sayfalar için 404 ekranı
+- `/login` — Herkese açık giriş sayfası
+- `/dashboard` — Kimlik doğrulaması gerektiren ana panel
+  - `/dashboard/home` — Ana görünüm
+  - `/dashboard/profile`, `/time-off`, `/payroll`, `/documents` — Alt modüller
+- `*` — 404 Bulunamadı sayfası
 
 ## Veri ve Oturum Yönetimi
 
@@ -95,6 +97,10 @@ Fontlar için `@fontsource-variable/geist` ve `@fontsource-variable/inter` paket
 - `eslint` — lint kuralları
 - `@vitejs/plugin-react` — React entegrasyonu
 - `@tailwindcss/vite` — Tailwind 4 entegrasyonu
+
+## Stil ve UI Tasarımı
+
+Uygulamanın görünüm tarafında Tailwind CSS 4 kullanılmaktadır. `src/index.css` dosyasında `@theme inline` kullanılarak Shadcn UI ile tam uyumlu CSS değişkenleri (CSS variables) tanımlanmıştır. Tasarım "kompakt" bir yapıdadır; root font boyutu ayarlanarak ekran alanından tasarruf edilmiştir. Sol menü için Shadcn UI'ın modern, daraltılabilir (collapsible) `Sidebar` bileşeni kullanılmaktadır.
 
 ## Çalıştırma
 

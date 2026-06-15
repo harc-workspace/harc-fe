@@ -5,18 +5,6 @@ import { apiClient } from '@/api/client';
 import { useAuth } from './useAuth';
 import type { MeResponse, User } from '@/types/auth';
 
-/**
- * Hook to validate and fetch user data from the getMe endpoint
- * 
- * This hook:
- * - Reads the google_id_token from context (loaded from localStorage)
- * - Calls GET /api/identity/me with the token
- * - Updates auth context on success
- * - Clears auth and redirects on 401 (token expired)
- * - Only runs if a token exists
- * 
- * Used on app initialization and route changes to validate the persisted token
- */
 export function useGetMe() {
   const navigate = useNavigate();
   const { token, setUser, setToken } = useAuth();
@@ -31,44 +19,41 @@ export function useGetMe() {
       try {
         const response = await apiClient.get<MeResponse>('/api/identity/me', token);
 
-        // Transform backend response to User format
+        // Backend'den gelen tüm yeni alanları frontend User formatına eşliyoruz
         const user: User = {
           id: response.internalUserId,
           email: response.userEmail,
-          fullName: response.userEmail.split('@')[0], // Use email prefix as fullName
+          fullName: response.userEmail.split('@')[0], // İsterseniz backend'den isim alanı eklenene kadar kalabilir
           role: response.assignedRole,
           roleDisplayName: response.assignedRoleDisplayName,
           avatarUrl: response.avatar,
+          team: response.team,
+          title: response.title,
+          manager: response.manager,
         };
 
         return user;
       } catch (error) {
-        // Check if it's a 401 (unauthorized/expired token)
+        // Whitelist'te olmayan veya silinen kullanıcılar 401 hatası aldığında otomatik temizlenip login'e atılır
         if (error instanceof Error && 'status' in error && error.status === 401) {
-          // Token is expired or invalid
           setToken(null);
           setUser(null);
           await navigate({ to: '/login' });
           throw error;
         }
-        // Re-throw other errors
         throw error;
       }
     },
-    // Only enable the query if a token exists
     enabled: !!token,
-    // Don't retry on 401 - if token is invalid, it won't become valid by retrying
     retry: (count, error) => {
       if (error instanceof Error && 'status' in error && error.status === 401) {
         return false;
       }
-      return count < 1; // Retry once for other errors
+      return count < 1;
     },
-    // Keep data stale for 5 minutes (matches QueryClient default staleTime)
     staleTime: 5 * 60 * 1000,
   });
 
-  // Update user context when query succeeds
   useEffect(() => {
     if (query.isSuccess && query.data) {
       setUser(query.data);

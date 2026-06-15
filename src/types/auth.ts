@@ -1,26 +1,37 @@
-export interface User {
-  id: string; // GUID from backend database
-  email: string; // Google verified email, unique login key
-  fullName: string; // Display name for UI
-  role: string; // RBAC
-  roleDisplayName: Record<string, string>; // Human-readable role name for UI, e.g. "Admin", "User"
-  avatarUrl: string | null; // Google profile picture
+export interface OrganizationComponent {
+  id: number;
+  name: string;
+  displayName: Record<string, string>;
 }
 
-export interface AuthContextType {
-  user: User | null;
-  setUser: (user: User | null) => void;
-  token: string | null;
-  setToken: (token: string | null) => void;
+export interface ManagerInfo {
+  id: string;
+  fullName: string;
+  email: string;
+  avatarUrl: string | null;
+}
+
+export interface User {
+  id: string;
+  email: string;
+  fullName: string;
+  role: string;
+  roleDisplayName: Record<string, string>;
+  avatarUrl: string | null;
+  team: OrganizationComponent | null;
+  title: OrganizationComponent | null;
+  manager: ManagerInfo | null;
 }
 
 export interface MeResponse {
-  message: string;
   internalUserId: string;
   userEmail: string;
   assignedRole: string;
   assignedRoleDisplayName: Record<string, string>;
   avatar: string | null;
+  team: OrganizationComponent | null;
+  title: OrganizationComponent | null;
+  manager: ManagerInfo | null;
 }
 
 export interface AuthResponse {
