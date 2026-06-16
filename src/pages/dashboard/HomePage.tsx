@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import * as card from "@/components/ui/card"
+import { LeaveBalanceCard } from '@/components/dashboard/LeaveBalanceCard';
 
 export function HomePage() {
   const { t } = useTranslation();
@@ -18,15 +19,7 @@ export function HomePage() {
           </card.CardContent>
         </card.Card>
 
-        <card.Card className="w-full rounded-sm">
-          <card.CardHeader>
-            <card.CardTitle>Sağ Üst Kart</card.CardTitle>
-            <card.CardDescription>%30'luk Dar Alan</card.CardDescription>
-          </card.CardHeader>
-          <card.CardContent>
-            Buraya "Son Aktiviteler" listesi veya bir "Pasta Grafik (Pie Chart)" ekleyebilirsiniz.
-          </card.CardContent>
-        </card.Card>
+        <LeaveBalanceCard />
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

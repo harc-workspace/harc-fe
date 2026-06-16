@@ -3,7 +3,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from '@/contexts/AuthContext.tsx';
 import { AppInit } from '@/components/AppInit';
-import { LanguageProvider } from '@/contexts/LanguageContext';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 
 const queryClient = new QueryClient({
@@ -19,13 +18,11 @@ export function RootLayout() {
   return (
     <AuthProvider>
       <QueryClientProvider client={queryClient}>
-        <LanguageProvider>
-          <ThemeProvider defaultTheme="system" storageKey="harc-theme">
-            <div className="relative min-h-screen">
-              <AppInit />
-            </div>
-          </ThemeProvider>
-        </LanguageProvider>
+        <ThemeProvider defaultTheme="system" storageKey="harc-theme">
+          <div className="relative min-h-screen">
+            <AppInit />
+          </div>
+        </ThemeProvider>
       </QueryClientProvider>
     </AuthProvider>
   );

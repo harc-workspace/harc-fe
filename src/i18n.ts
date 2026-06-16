@@ -57,6 +57,15 @@ const resources = {
           roleDisplayName: 'Role Display Name',
           id: 'ID',
         },
+        leaveCard: {
+          title: 'Annual Leave Status',
+          daysLeft: 'Days Left',
+          used: 'Used',
+          total: 'Total',
+          days: 'days',
+          nextAllowanceInfo: 'In {{- days}} days ({{date}}), {{- amount}} days will be added to your leave balance.',
+          waitingFirstYear: '* Your leave balance will be defined after your first year in the company.'
+        },
       },
       notFound: {
         title: '404',
@@ -119,6 +128,15 @@ const resources = {
           role: 'Rol',
           roleDisplayName: 'Rolün Görünen Adı',
           id: 'Kimlik',
+        },
+        leaveCard: {
+          title: 'Yıllık İzin Durumu',
+          daysLeft: 'Gün Kaldı',
+          used: 'Kullanılan',
+          total: 'Toplam Hak',
+          days: 'gün',
+          nextAllowanceInfo: '{{- days}} gün sonra ({{date}}) izin bakiyenize {{- amount}} gün daha eklenecektir.',
+          waitingFirstYear: '* Şirketteki ilk yılınız dolduğunda izin hakkınız tanımlanacaktır.'
         },
       },
       notFound: {
