@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { LeaveBalanceCard } from '@/components/dashboard/LeaveBalanceCard';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
+import { toast } from "sonner"
 
 // --- Örnek Senaryo Verisi ---
 const mockEvents = {
@@ -72,7 +73,7 @@ export function TimeOffPage() {
     if (!rangeStart || (rangeStart && rangeEnd)) {
       // Yeni seçim başlatılıyor veya eski seçim sıfırlanıyor
       if (checkOverlap(dateString, dateString)) {
-        alert("Bu tarihte zaten bir izniniz bulunuyor!");
+        toast.error("Bu tarihte zaten bir izniniz bulunuyor!");
         return;
       }
       setRangeStart(dateString);
@@ -82,7 +83,7 @@ export function TimeOffPage() {
       if (dateString < rangeStart) {
         // Eğer tıklanan tarih başlangıçtan önceyse, yeni başlangıç tarihi yapıyoruz
         if (checkOverlap(dateString, dateString)) {
-          alert("Bu tarihte zaten bir izniniz bulunuyor!");
+          toast.error("Bu tarihte zaten bir izniniz bulunuyor!");
           return;
         }
         setRangeStart(dateString);
@@ -90,7 +91,7 @@ export function TimeOffPage() {
       } else {
         // Tüm aralıkta çakışma var mı kontrol et
         if (checkOverlap(rangeStart, dateString)) {
-          alert("Seçtiğiniz tarih aralığında mevcut bir izninizle çakışma (onaylı/bekleyen) var!");
+          toast.error("Seçtiğiniz tarih aralığında mevcut bir izninizle çakışma (onaylı/bekleyen) var!");
           return;
         }
         setRangeEnd(dateString);
@@ -160,7 +161,7 @@ function TimeOffHeader({ t, isSheetOpen, setIsSheetOpen }: HeaderProps) {
             <Plus className="size-4" /> Yeni İzin Talebi
           </Button>
         </SheetTrigger>
-        <SheetContent side="right" className="w-[400px] sm:w-[500px]">
+        <SheetContent side="right" className="w-100 sm:w-125">
           <SheetHeader>
             <SheetTitle>İzin Talebi Oluştur</SheetTitle>
             <SheetDescription>Tarih aralığı seçerken takvimdeki çakışmaları göz önünde bulundurabilirsiniz.</SheetDescription>
@@ -240,7 +241,7 @@ function CalendarDayCell({ cell, index, rangeStart, rangeEnd, onCellClick, setIs
     <div
       onClick={() => cell.day && onCellClick(cell.dateString)}
       className={cn(
-        "min-h-[105px] p-1.5 flex flex-col gap-1 transition-colors relative cursor-pointer select-none",
+        "min-h-26.25 p-1.5 flex flex-col gap-1 transition-colors relative cursor-pointer select-none",
         !cell.day ? "bg-muted/10 opacity-40 pointer-events-none" : "bg-background hover:bg-muted/15",
         hasHoliday && "bg-emerald-50/40 dark:bg-emerald-950/10",
         isWithinRange && "bg-primary/15 dark:bg-primary/25", // Aralık renklendirmesi
@@ -271,14 +272,14 @@ function CalendarDayCell({ cell, index, rangeStart, rangeEnd, onCellClick, setIs
 
       {/* Gün Başlığı */}
       <div className="flex justify-between items-start w-full">
-        <span className={cn("text-xs font-semibold p-0.5 min-w-[20px] text-center rounded-sm",
+        <span className={cn("text-xs font-semibold p-0.5 min-w-5 text-center rounded-sm",
           isWeekend ? "text-rose-500/80" : "text-foreground",
           (isSelectedStart || isSelectedEnd) && "bg-primary text-primary-foreground"
         )}>
           {cell.day}
         </span>
         {hasHoliday && (
-          <span className="text-[9px] font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950 px-1 rounded truncate max-w-[80px]">
+          <span className="text-[9px] font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950 px-1 rounded truncate max-w-20">
             {hasHoliday.label}
           </span>
         )}
