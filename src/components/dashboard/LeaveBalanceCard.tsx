@@ -2,7 +2,7 @@
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PlaneTakeoff, Info } from "lucide-react";
-import { useGetMyLeaveBalance } from "@/hooks/useGetMyLeaveBalance";
+import { useGetMyLeaveBalance } from "@/hooks/leave/useGetMyLeaveBalance";
 
 export function LeaveBalanceCard() {
   const { t, i18n } = useTranslation();
