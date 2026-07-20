@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/api/client';
-import { useAuth } from './useAuth';
+import { useAuth } from '../useAuth';
 
 export interface LeaveBalanceResponse {
   totalLeaveQuota: number;

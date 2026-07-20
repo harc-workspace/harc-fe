@@ -80,17 +80,22 @@ async function request<T = Record<string, unknown>>(
   const baseUrl = getGatewayBaseUrl();
   const url = `${baseUrl}${endpoint}`;
   
+  const isFormDataBody = typeof FormData !== 'undefined' && options.body instanceof FormData;
   const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
     ...getAcceptLanguageHeader(),
     ...getAuthHeader(token),
     ...options.headers,
   };
+
+  if (!isFormDataBody) {
+    headers['Content-Type'] = 'application/json';
+  }
   
   try {
     const response = await fetch(url, {
       ...options,
       headers,
+      credentials: 'include',
     });
     
     // Handle non-OK responses
@@ -132,14 +137,14 @@ export const apiClient = {
    */
   post: async <T = Record<string, unknown>>(
     endpoint: string,
-    body?: Record<string, unknown>,
+    body?: unknown,
     token?: string
   ): Promise<T> => {
     return request<T>(
       endpoint,
       {
         method: 'POST',
-        body: body ? JSON.stringify(body) : undefined,
+        body: body instanceof FormData ? body : body ? JSON.stringify(body) : undefined,
       },
       token
     );
@@ -169,14 +174,14 @@ export const apiClient = {
    */
   put: async <T = Record<string, unknown>>(
     endpoint: string,
-    body?: Record<string, unknown>,
+    body?: unknown,
     token?: string
   ): Promise<T> => {
     return request<T>(
       endpoint,
       {
         method: 'PUT',
-        body: body ? JSON.stringify(body) : undefined,
+        body: body instanceof FormData ? body : body ? JSON.stringify(body) : undefined,
       },
       token
     );

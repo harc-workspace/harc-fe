@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { LeaveType } from '@/enums/leaveType';
+import { useCreateLeave } from '@/hooks/leave/useLeaveMutations';
 
 // --- Örnek Senaryo Verisi ---
 const mockEvents = {
@@ -33,11 +34,15 @@ type CalendarCell = { day: number | null; dateString: string };
 export function TimeOffPage() {
   const { t } = useTranslation();
   const [currentDate, setCurrentDate] = useState(new Date());
+  const createLeaveMutation = useCreateLeave();
 
   // --- İzin Giriş ve Tarih Seçim State'leri ---
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [rangeStart, setRangeStart] = useState<string | null>(null);
   const [rangeEnd, setRangeEnd] = useState<string | null>(null);
+  const [leaveType, setLeaveType] = useState<string>('');
+  const [description, setDescription] = useState('');
+  const [documents, setDocuments] = useState<File[]>([]);
 
   // Takvim matrisini oluşturma
   const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
@@ -139,16 +144,62 @@ export function TimeOffPage() {
     setRangeEnd(null);
   };
 
+  const resetLeaveForm = () => {
+    clearSelection();
+    setLeaveType('');
+    setDescription('');
+    setDocuments([]);
+  };
+
+  const handleDialogOpenChange = (open: boolean) => {
+    setIsDialogOpen(open);
+
+    if (!open) {
+      resetLeaveForm();
+    }
+  };
+
+  const handleSubmitLeave = async () => {
+    if (!rangeStart || !rangeEnd || !leaveType) {
+      toast.error('Lütfen başlangıç, bitiş ve izin tipini doldurun.');
+      return;
+    }
+
+    if (rangeEnd < rangeStart) {
+      toast.error('Bitiş tarihi başlangıç tarihinden önce olamaz.');
+      return;
+    }
+
+    await createLeaveMutation.mutateAsync({
+      StartDate: rangeStart,
+      EndDate: rangeEnd,
+      LeaveType: Number(leaveType) as LeaveType,
+      Description: description.trim() || null,
+      Documents: documents,
+    });
+
+    setIsDialogOpen(false);
+    resetLeaveForm();
+  };
+
   return (
     <div className="flex flex-col gap-6">
       <TimeOffHeader
         t={t}
         isDialogOpen={isDialogOpen}
-        setIsDialogOpen={setIsDialogOpen}
+        setIsDialogOpen={handleDialogOpenChange}
         rangeStart={rangeStart}
         rangeEnd={rangeEnd}
         setRangeStart={setRangeStart}
         setRangeEnd={setRangeEnd}
+        leaveType={leaveType}
+        setLeaveType={setLeaveType}
+        description={description}
+        setDescription={setDescription}
+        documents={documents}
+        setDocuments={setDocuments}
+        onSubmitLeave={handleSubmitLeave}
+        isSubmitting={createLeaveMutation.isPending}
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6">
@@ -183,7 +234,6 @@ export function TimeOffPage() {
                 rangeEnd={rangeEnd}
                 onCellClick={handleCellClick}
                 setIsDialogOpen={setIsDialogOpen}
-                clearSelection={clearSelection}
               />
             ))}
           </div>
@@ -201,26 +251,42 @@ interface HeaderProps {
   rangeEnd: string | null;
   setRangeStart: (val: string | null) => void;
   setRangeEnd: (val: string | null) => void;
+  leaveType: string;
+  setLeaveType: (val: string) => void;
+  description: string;
+  setDescription: (val: string) => void;
+  documents: File[];
+  setDocuments: (files: File[]) => void;
+  onSubmitLeave: () => Promise<void>;
+  isSubmitting: boolean;
 }
 
-function TimeOffHeader({ t, isDialogOpen, setIsDialogOpen, rangeStart, rangeEnd, setRangeStart, setRangeEnd }: HeaderProps) {
+function TimeOffHeader({
+  t,
+  isDialogOpen,
+  setIsDialogOpen,
+  rangeStart,
+  rangeEnd,
+  setRangeStart,
+  setRangeEnd,
+  leaveType,
+  setLeaveType,
+  description,
+  setDescription,
+  documents,
+  setDocuments,
+  onSubmitLeave,
+  isSubmitting,
+}: HeaderProps) {
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const formData = new FormData(e.currentTarget);
 
-    const leaveRequest = {
-      startDate: rangeStart,
-      endDate: rangeEnd,
-      type: Number(formData.get("leaveType")),
-      description: formData.get("description")?.toString() || null
-    };
-
-    console.log("İzin Talebi Gönderiliyor: ", leaveRequest);
-    // TODO: API'ye POST isteği atılacak yer
-
-    toast.success("İzin talebi başarıyla oluşturuldu.");
-    setIsDialogOpen(false);
+    try {
+      await onSubmitLeave();
+    } catch {
+      // Hook already reports the error with a toast.
+    }
   };
 
   return (
@@ -270,7 +336,7 @@ function TimeOffHeader({ t, isDialogOpen, setIsDialogOpen, rangeStart, rangeEnd,
 
             <div className="space-y-2">
               <Label htmlFor="leaveType">İzin Tipi <span className="text-destructive">*</span></Label>
-              <Select name="leaveType" required>
+              <Select value={leaveType} onValueChange={setLeaveType} required>
                 <SelectTrigger>
                   <SelectValue placeholder="Bir izin tipi seçin" />
                 </SelectTrigger>
@@ -287,16 +353,39 @@ function TimeOffHeader({ t, isDialogOpen, setIsDialogOpen, rangeStart, rangeEnd,
               <Label htmlFor="description">Açıklama (İsteğe Bağlı)</Label>
               <Textarea
                 id="description"
-                name="description"
                 placeholder="İzin talebinizle ilgili eklemek istedikleriniz..."
                 className="resize-none"
                 rows={3}
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
               />
             </div>
 
+            <div className="space-y-2">
+              <Label htmlFor="documents">Ekler (İsteğe Bağlı)</Label>
+              <Input
+                id="documents"
+                type="file"
+                multiple
+                onChange={(e) => setDocuments(Array.from(e.target.files ?? []))}
+              />
+              {documents.length > 0 && (
+                <div className="rounded-lg border border-border bg-muted/20 p-3 text-xs text-muted-foreground space-y-1">
+                  <p className="font-medium text-foreground">Seçilen dosyalar</p>
+                  <ul className="space-y-1">
+                    {documents.map((file) => (
+                      <li key={`${file.name}-${file.size}`}>{file.name}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+
             <DialogFooter className="pt-4">
-              <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>İptal</Button>
-              <Button type="submit">Talep Oluştur</Button>
+              <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)} disabled={isSubmitting}>İptal</Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? 'Gönderiliyor...' : 'Talep Oluştur'}
+              </Button>
             </DialogFooter>
           </form>
         </DialogContent>
@@ -372,10 +461,9 @@ interface CellProps {
   rangeEnd: string | null;
   onCellClick: (dateStr: string) => void;
   setIsDialogOpen: (open: boolean) => void;
-  clearSelection: () => void;
 }
 
-function CalendarDayCell({ cell, index, rangeStart, rangeEnd, onCellClick, setIsDialogOpen, clearSelection }: CellProps) {
+function CalendarDayCell({ cell, index, rangeStart, rangeEnd, onCellClick, setIsDialogOpen }: CellProps) {
   const hasHoliday = mockEvents.holidays.find(h => h.date === cell.dateString);
   const myLeave = mockEvents.myLeaves.find(l => cell.dateString >= l.start && cell.dateString <= l.end);
   const teamLeave = mockEvents.teamFutureLeaves.find(t => cell.dateString >= t.start && cell.dateString <= t.end);
@@ -432,7 +520,7 @@ function CalendarDayCell({ cell, index, rangeStart, rangeEnd, onCellClick, setIs
         </span>
 
         {hasHoliday && (
-          <span className="text-[10px] font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950 px-1.5 py-0.5 rounded-md truncate max-w-[80px]">
+            <span className="text-[10px] font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950 px-1.5 py-0.5 rounded-md truncate max-w-20">
             {hasHoliday.label}
           </span>
         )}
