@@ -4,7 +4,7 @@ import { LoginPage } from '@/pages/LoginPage';
 import { DashboardLayout } from '@/layouts/DashboardLayout';
 import { HomePage } from '@/pages/dashboard/HomePage';
 import { ProfilePage } from '@/pages/dashboard/ProfilePage';
-import { TimeOffPage } from '@/pages/dashboard/TimeOffPage';
+import { TimeOffPage } from '@/pages/dashboard/leave/TimeOffPage';
 import { PayrollPage } from '@/pages/dashboard/PayrollPage';
 import { DocumentsPage } from '@/pages/dashboard/DocumentsPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
