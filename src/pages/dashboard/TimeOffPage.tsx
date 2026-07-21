@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Plus, CalendarDays, Clock, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, CalendarDays, Clock, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { LeaveBalanceCard } from '@/components/dashboard/LeaveBalanceCard';
 import { cn } from '@/lib/utils';
@@ -12,22 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { LeaveType } from '@/enums/leaveType';
 import { useCreateLeave } from '@/hooks/leave/useLeaveMutations';
-
-// --- Örnek Senaryo Verisi ---
-const mockEvents = {
-  myLeaves: [
-    { id: 1, type: LeaveType.Annual, status: 'approved', start: '2026-06-15', end: '2026-06-19' }, // Geçmiş izin
-    { id: 2, type: LeaveType.Sick, status: 'pending', start: '2026-07-10', end: '2026-07-11' }, // Bekleyen hastalık izni
-    { id: 3, type: LeaveType.Excuse, status: 'approved', start: '2026-07-24', end: '2026-07-24' } // Gelecek mazeret izni
-  ],
-  teamFutureLeaves: [
-    { id: 101, user: 'Ahmet Y.', type: LeaveType.Annual, start: '2026-07-03', end: '2026-07-06' },
-    { id: 102, user: 'Elif K.', type: LeaveType.Excuse, start: '2026-07-17', end: '2026-07-17' }
-  ],
-  holidays: [
-    { id: 201, date: '2026-07-15', label: '15 Temmuz Demokrasi ve Milli Birlik Günü' }
-  ]
-};
+import { useGetCalendarLeaves } from '@/hooks/leave/useGetCalendarLeaves';
 
 type CalendarCell = { day: number | null; dateString: string };
 
@@ -35,6 +20,26 @@ export function TimeOffPage() {
   const { t } = useTranslation();
   const [currentDate, setCurrentDate] = useState(new Date());
   const createLeaveMutation = useCreateLeave();
+
+  const { data: calendarData, isLoading: isCalendarLoading } = useGetCalendarLeaves(
+    currentDate.getFullYear(), 
+    currentDate.getMonth() + 1
+  );
+
+  const myLeaves = calendarData?.myLeaves?.map(l => ({
+    ...l,
+    start: l.start.split('T')[0],
+    end: l.end.split('T')[0]
+  })) || [];
+  const teamLeaves = calendarData?.teamLeaves?.map(l => ({
+    ...l,
+    start: l.start.split('T')[0],
+    end: l.end.split('T')[0]
+  })) || [];
+  const holidays = calendarData?.holidays?.map(h => ({
+    ...h,
+    date: h.date.split('T')[0]
+  })) || [];
 
   // --- İzin Giriş ve Tarih Seçim State'leri ---
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -51,7 +56,7 @@ export function TimeOffPage() {
 
   useEffect(() => {
     if (isDialogOpen && rangeStart && rangeEnd) {
-      const conflictingLeaves = mockEvents.teamFutureLeaves.filter(leave => {
+      const conflictingLeaves = teamLeaves.filter(leave => {
         const maxStart = rangeStart > leave.start ? rangeStart : leave.start;
         const minEnd = rangeEnd < leave.end ? rangeEnd : leave.end;
         return maxStart <= minEnd;
@@ -65,29 +70,22 @@ export function TimeOffPage() {
 
         conflictingLeaves.forEach(conflict => {
           toast.info(
-            `Ekip arkadaşınız ${conflict.user}, ${formatDateLabel(conflict.start)} - ${formatDateLabel(conflict.end)} tarihleri arasında izinli görünüyor. Aynı döneme izin talep ediyorsunuz, iş planlaması adına bilginize! 🤝`,
-            { 
-              duration: 6000,
-              position: "top-center"
-            }
+            `Ekip arkadaşınız ${conflict.user}, ${formatDateLabel(conflict.start)} - ${formatDateLabel(conflict.end)} tarihleri arasında izinli görünüyor. Aynı döneme izin talep ediyorsunuz, iş planlamasına bilginize!`, 
+            { duration: 6000, position: "top-center" }
           );
         });
       }
     }
-  }, [isDialogOpen, rangeStart, rangeEnd]);
+  }, [isDialogOpen, rangeStart, rangeEnd, teamLeaves]);
 
   const handlePrevMonth = () => {setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));};
   const handleNextMonth = () => { setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));};
   
-  // Spread operatörü ve açık tip ile birleştiriyoruz
   const calendarCells: CalendarCell[] = [
-    // 1. Kısım: Ay başındaki boşluklar (day: null)
     ...Array.from({ length: adjustedFirstDayIndex }, () => ({
       day: null,
       dateString: ''
     })),
-
-    // 2. Kısım: Ayın gerçek günleri (day: number)
     ...Array.from({ length: daysInMonth }, (_, i) => {
       const day = i + 1;
       const monthStr = String(currentDate.getMonth() + 1).padStart(2, '0');
@@ -99,19 +97,16 @@ export function TimeOffPage() {
     })
   ];
 
-  // --- Çakışma Kontrol Fonksiyonu ---
   const checkOverlap = (startStr: string, endStr: string) => {
-    return mockEvents.myLeaves.some(leave => {
+    return myLeaves.some(leave => {
       const maxStart = startStr > leave.start ? startStr : leave.start;
       const minEnd = endStr < leave.end ? endStr : leave.end;
-      return maxStart <= minEnd; // Eğer matematiksel olarak kesişiyorlarsa true döner
+      return maxStart <= minEnd;
     });
   };
 
-  // --- Hücreye Tıklama Yönetimi ---
   const handleCellClick = (dateString: string) => {
     if (!rangeStart || (rangeStart && rangeEnd)) {
-      // Yeni seçim başlatılıyor veya eski seçim sıfırlanıyor
       if (checkOverlap(dateString, dateString)) {
         toast.error("Bu tarihte zaten bir izniniz bulunuyor!");
         return;
@@ -119,9 +114,7 @@ export function TimeOffPage() {
       setRangeStart(dateString);
       setRangeEnd(null);
     } else {
-      // Bitiş tarihi seçiliyor
       if (dateString < rangeStart) {
-        // Eğer tıklanan tarih başlangıçtan önceyse, yeni başlangıç tarihi yapıyoruz
         if (checkOverlap(dateString, dateString)) {
           toast.error("Bu tarihte zaten bir izniniz bulunuyor!");
           return;
@@ -129,7 +122,6 @@ export function TimeOffPage() {
         setRangeStart(dateString);
         setRangeEnd(null);
       } else {
-        // Tüm aralıkta çakışma var mı kontrol et
         if (checkOverlap(rangeStart, dateString)) {
           toast.error("Seçtiğiniz tarih aralığında mevcut bir izninizle çakışma (onaylı/bekleyen) var!");
           return;
@@ -153,7 +145,6 @@ export function TimeOffPage() {
 
   const handleDialogOpenChange = (open: boolean) => {
     setIsDialogOpen(open);
-
     if (!open) {
       resetLeaveForm();
     }
@@ -164,12 +155,10 @@ export function TimeOffPage() {
       toast.error('Lütfen başlangıç, bitiş ve izin tipini doldurun.');
       return;
     }
-
     if (rangeEnd < rangeStart) {
       toast.error('Bitiş tarihi başlangıç tarihinden önce olamaz.');
       return;
     }
-
     await createLeaveMutation.mutateAsync({
       StartDate: rangeStart,
       EndDate: rangeEnd,
@@ -177,7 +166,6 @@ export function TimeOffPage() {
       Description: description.trim() || null,
       Documents: documents,
     });
-
     setIsDialogOpen(false);
     resetLeaveForm();
   };
@@ -203,40 +191,46 @@ export function TimeOffPage() {
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6">
-        {/* Sol Kolon */}
         <div className="flex flex-col gap-6 lg:sticky lg:top-6 self-start h-fit">
           <LeaveBalanceCard />
           <CalendarLegend />
         </div>
 
-        {/* Sağ Kolon: Birleşik Dev Takvim */}
-        <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
+        <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden relative">
           <CalendarControls
             currentDate={currentDate}
             onPrev={handlePrevMonth}
             onNext={handleNextMonth}
           />
-
-          {/* Gün İsimleri */}
+          
           <div className="grid grid-cols-7 border-b border-border bg-muted/40 text-center text-[11px] font-medium text-muted-foreground uppercase py-2">
             <div>Pzt</div><div>Sal</div><div>Çar</div><div>Per</div><div>Cum</div>
             <div className="text-rose-500">Cmt</div><div className="text-rose-500">Paz</div>
           </div>
-
-          {/* Takvim Grid Alanı */}
-          <div className="grid grid-cols-7 bg-grid divide-x divide-y divide-border/60 border-t-0 border-l-0">
-            {calendarCells.map((cell, index) => (
-              <CalendarDayCell
-                key={index}
-                cell={cell}
-                index={index}
-                rangeStart={rangeStart}
-                rangeEnd={rangeEnd}
-                onCellClick={handleCellClick}
-                setIsDialogOpen={setIsDialogOpen}
-              />
-            ))}
-          </div>
+          
+          {isCalendarLoading ? (
+            <div className="flex flex-col items-center justify-center min-h-100 text-muted-foreground">
+              <Loader2 className="size-8 animate-spin mb-4 text-primary" />
+              <p>Takvim verileri yükleniyor...</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-7 bg-grid divide-x divide-y divide-border/60 border-t-0 border-l-0">
+              {calendarCells.map((cell, index) => (
+                <CalendarDayCell
+                  key={index}
+                  cell={cell}
+                  index={index}
+                  rangeStart={rangeStart}
+                  rangeEnd={rangeEnd}
+                  onCellClick={handleCellClick}
+                  setIsDialogOpen={setIsDialogOpen}
+                  myLeaves={myLeaves}
+                  teamLeaves={teamLeaves}
+                  holidays={holidays}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -461,16 +455,17 @@ interface CellProps {
   rangeEnd: string | null;
   onCellClick: (dateStr: string) => void;
   setIsDialogOpen: (open: boolean) => void;
+  myLeaves: any[];
+  teamLeaves: any[];
+  holidays: any[];
 }
 
-function CalendarDayCell({ cell, index, rangeStart, rangeEnd, onCellClick, setIsDialogOpen }: CellProps) {
-  const hasHoliday = mockEvents.holidays.find(h => h.date === cell.dateString);
-  const myLeave = mockEvents.myLeaves.find(l => cell.dateString >= l.start && cell.dateString <= l.end);
-  const teamLeave = mockEvents.teamFutureLeaves.find(t => cell.dateString >= t.start && cell.dateString <= t.end);
-
+function CalendarDayCell({ cell, index, rangeStart, rangeEnd, onCellClick, setIsDialogOpen, myLeaves, teamLeaves, holidays }: CellProps) {
+  const hasHoliday = holidays.find(h => h.date === cell.dateString);
+  const myLeave = myLeaves.find(l => cell.dateString >= l.start && cell.dateString <= l.end);
+  const teamLeave = teamLeaves.find(t => cell.dateString >= t.start && cell.dateString <= t.end);
   const isWeekend = index % 7 === 5 || index % 7 === 6;
 
-  // Tarih seçim durumları
   const isSelectedStart = rangeStart === cell.dateString;
   const isSelectedEnd = rangeEnd === cell.dateString;
   const isWithinRange = rangeStart && rangeEnd && cell.dateString >= rangeStart && cell.dateString <= rangeEnd;
@@ -489,7 +484,6 @@ function CalendarDayCell({ cell, index, rangeStart, rangeEnd, onCellClick, setIs
         isSingleDaySelection && "rounded-xl border-x-4 border-primary bg-primary/15 dark:bg-primary/25"
       )}
     >
-      {/* Tooltip Popup (Sadece Bitiş Tarihinde Çıkar) */}
       {isSelectedEnd && (
         <div
           className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-30 animate-in fade-in-0 zoom-in-95 duration-150"
@@ -500,33 +494,26 @@ function CalendarDayCell({ cell, index, rangeStart, rangeEnd, onCellClick, setIs
             className="cursor-pointer font-medium text-[11px] h-7 px-3 rounded-full shadow-lg hover:shadow-xl transition-all bg-primary text-primary-foreground"
             onClick={() => setIsDialogOpen(true)}
           >
-            <Plus className="mr-1.5 size-3" />
-            İzin Talebi Oluştur
+            <Plus className="mr-1.5 size-3" /> İzin Talebi Oluştur
           </Button>
         </div>
       )}
 
-      {/* Gün Başlığı */}
       <div className="flex justify-between items-start w-full">
-        {/* Yuvarlak tarih balonu */}
         <span className={cn(
           "flex items-center justify-center size-7 text-xs font-semibold rounded-full transition-all duration-300",
           isWeekend && !(isSelectedStart || isSelectedEnd) ? "text-rose-500/80" : "text-foreground",
-
-          // Seçili günse (Başlangıç veya Bitiş), numarayı tam bir daire içinde belirginleştir
           (isSelectedStart || isSelectedEnd) && "bg-primary text-primary-foreground shadow-md ring-4 ring-primary/20 scale-105"
         )}>
           {cell.day}
         </span>
-
         {hasHoliday && (
             <span className="text-[10px] font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950 px-1.5 py-0.5 rounded-md truncate max-w-20">
-            {hasHoliday.label}
+            {hasHoliday.name}
           </span>
         )}
       </div>
 
-      {/* İzin Barları */}
       <div className="flex flex-col gap-1 mt-auto w-full">
         {myLeave && (
           <div className={cn(
@@ -536,17 +523,14 @@ function CalendarDayCell({ cell, index, rangeStart, rangeEnd, onCellClick, setIs
               : "bg-primary/10 text-primary border border-dashed border-primary/50"
           )}>
             {myLeave.status === 'pending' && <Clock className="size-3 shrink-0 animate-pulse" />}
-            {/* Dinamik Label Fonksiyonu Kullanımı */}
             <span>{getLeaveTypeLabel(myLeave.type)}</span>
           </div>
         )}
-
         {teamLeave && !myLeave && (
           <div className="text-[10px] py-1 px-1.5 bg-blue-50 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/50 text-blue-700 dark:text-blue-300 rounded-md font-medium truncate flex items-center gap-1.5">
             <span className="size-4 bg-blue-200 dark:bg-blue-800 rounded-full flex items-center justify-center text-[8px] font-bold text-blue-800 dark:text-blue-200">
               {teamLeave.user.charAt(0)}
             </span>
-            {/* Ekip izninde de Dinamik Label Kullanımı */}
             <span className="truncate">{teamLeave.user} ({getLeaveTypeLabel(teamLeave.type)})</span>
           </div>
         )}
