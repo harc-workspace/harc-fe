@@ -87,7 +87,7 @@ async function request<T = Record<string, unknown>>(
     ...options.headers,
   };
 
-  if (!isFormDataBody) {
+  if (!isFormDataBody && options.body) {
     headers['Content-Type'] = 'application/json';
   }
   

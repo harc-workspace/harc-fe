@@ -31,3 +31,38 @@ export const createLeaveRequest = async (data: CreateLeaveRequest, token: string
     const response = await apiClient.post('/api/leave', formData, token);
     return response.data;
 };
+
+export interface CalendarLeaveEvent {
+  id: number;
+  type: LeaveType;
+  status: 'pending' | 'approved' | 'rejected';
+  start: string; // YYYY-MM-DD formatında beklenir
+  end: string;
+}
+
+export interface CalendarTeamLeaveEvent {
+  id: number;
+  user: string;
+  type: LeaveType;
+  start: string;
+  end: string;
+}
+
+export interface CalendarHoliday {
+  id: number;
+  date: string;
+  name: string;
+}
+
+export interface GetCalendarLeavesResponse {
+  myLeaves: CalendarLeaveEvent[];
+  teamLeaves: CalendarTeamLeaveEvent[];
+  holidays: CalendarHoliday[];
+}
+
+export const getCalendarLeaves = async (year: number, month: number, token: string) => {
+  return await apiClient.get<GetCalendarLeavesResponse>(
+    `/api/leave/calendar?year=${year}&month=${month}`, 
+    token
+  );
+};
