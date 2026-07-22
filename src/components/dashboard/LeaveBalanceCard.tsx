@@ -55,7 +55,7 @@ export function LeaveBalanceCard() {
 
             {/* Dinamik Gelecek Hakediş Bilgilendirmesi */}
             {balance && balance.totalLeaveQuota > 0 && (
-              <div className="mt-5 flex items-start gap-2 rounded-md bg-blue-50 dark:bg-blue-950/40 p-2.5 text-xs text-blue-700 dark:text-blue-300 border border-blue-100 dark:border-blue-900/50">
+              <div className="mt-5 flex items-start gap-2 rounded-sm bg-blue-50 dark:bg-blue-950/40 p-2.5 text-xs text-blue-700 dark:text-blue-300 border border-blue-100 dark:border-blue-900/50">
                 <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" />
                 <p className="leading-relaxed">
                   {t('dashboard.leaveCard.nextAllowanceInfo', {

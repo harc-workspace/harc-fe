@@ -134,7 +134,7 @@ export function TimeOffHeader({
                 onChange={(e) => setDocuments(Array.from(e.target.files ?? []))}
               />
               {documents.length > 0 && (
-                <div className="rounded-lg border border-border bg-muted/20 p-3 text-xs text-muted-foreground space-y-1">
+                <div className="rounded-sm border border-border bg-muted/20 p-3 text-xs text-muted-foreground space-y-1">
                   <p className="font-medium text-foreground">Seçilen dosyalar</p>
                   <ul className="space-y-1">
                     {documents.map((file) => (

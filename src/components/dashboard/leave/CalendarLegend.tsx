@@ -9,7 +9,7 @@ export function CalendarLegend() {
   ];
 
   return (
-    <div className="rounded-lg border border-border bg-card p-4 space-y-3 shadow-sm">
+    <div className="rounded-sm border border-border bg-card p-4 space-y-3 shadow-sm">
       <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Takvim Haritası</h4>
       <div className="space-y-2.5 text-xs">
         {legendItems.map((item, i) => (
