@@ -6,10 +6,10 @@ import { toast } from "sonner"
 import { LeaveType } from '@/enums/leaveType';
 import { useCreateLeave } from '@/hooks/leave/useLeaveMutations';
 import { useGetCalendarLeaves } from '@/hooks/leave/useGetCalendarLeaves';
-import { TimeOffHeader } from './TimeOffHeader';
-import { CalendarDayCell, type CalendarCell } from './CalendarDayCell';
-import { CalendarLegend } from './CalendarLegend';
-import { CalendarControls } from './CalendarControls';
+import { TimeOffHeader } from '../../components/dashboard/leave/TimeOffHeader';
+import { CalendarDayCell, type CalendarCell } from '../../components/dashboard/leave/CalendarDayCell';
+import { CalendarLegend } from '../../components/dashboard/leave/CalendarLegend';
+import { CalendarControls } from '../../components/dashboard/leave/CalendarControls';
 
 
 export function TimeOffPage() {
@@ -22,22 +22,11 @@ export function TimeOffPage() {
     currentDate.getMonth() + 1
   );
 
-  const myLeaves = calendarData?.myLeaves?.map(l => ({
-    ...l,
-    start: l.start.split('T')[0],
-    end: l.end.split('T')[0]
-  })) || [];
-  const teamLeaves = calendarData?.teamLeaves?.map(l => ({
-    ...l,
-    start: l.start.split('T')[0],
-    end: l.end.split('T')[0]
-  })) || [];
-  const holidays = calendarData?.holidays?.map(h => ({
-    ...h,
-    date: h.date.split('T')[0]
-  })) || [];
+  const myLeaves = calendarData?.myLeaves?.map(l => ({ ...l, start: l.start.split('T')[0], end: l.end.split('T')[0] })) || [];
+  const teamLeaves = calendarData?.teamLeaves?.map(l => ({ ...l, start: l.start.split('T')[0], end: l.end.split('T')[0] })) || [];
+  const holidays = calendarData?.holidays?.map(h => ({ ...h, date: h.date.split('T')[0] })) || [];
 
-  // --- İzin Giriş ve Tarih Seçim State'leri ---
+  // Leave form state
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [rangeStart, setRangeStart] = useState<string | null>(null);
   const [rangeEnd, setRangeEnd] = useState<string | null>(null);
@@ -192,7 +181,7 @@ export function TimeOffPage() {
           <CalendarLegend />
         </div>
 
-        <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden relative">
+        <div className="rounded-sm border border-border bg-card shadow-sm overflow-hidden relative">
           <CalendarControls
             currentDate={currentDate}
             onPrev={handlePrevMonth}
@@ -232,5 +221,3 @@ export function TimeOffPage() {
     </div>
   );
 }
-
-

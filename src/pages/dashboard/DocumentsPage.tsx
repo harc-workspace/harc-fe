@@ -4,14 +4,14 @@ export function DocumentsPage() {
   const { t } = useTranslation();
 
   return (
-    <section className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+    <section className="rounded-sm border border-border bg-card p-6 shadow-sm">
       <div className="space-y-2">
         <p className="text-sm font-medium text-muted-foreground">{t('dashboard.sidebar.sections.documents')}</p>
         <h2 className="text-2xl font-semibold">{t('dashboard.sidebar.sections.documents')}</h2>
         <p className="text-sm text-muted-foreground">{t('dashboard.documentsDescription')}</p>
       </div>
 
-      <div className="mt-6 rounded-xl border border-dashed border-border/70 bg-muted/20 p-4 text-sm text-muted-foreground">
+      <div className="mt-6 rounded-sm border border-dashed border-border/70 bg-muted/20 p-4 text-sm text-muted-foreground">
         HR documents, policies, and files will live here.
       </div>
     </section>

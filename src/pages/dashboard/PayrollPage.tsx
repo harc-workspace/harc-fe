@@ -23,7 +23,7 @@ export function PayrollPage() {
   return (
     <div className="flex flex-col gap-6">
       {/* Başlık Alanı */}
-      <section className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+      <section className="rounded-sm border border-border bg-card p-6 shadow-sm">
         <div className="space-y-2">
           <p className="text-sm font-medium text-muted-foreground">{t('dashboard.sidebar.sections.payroll')}</p>
           <h2 className="text-2xl font-semibold">{t('dashboard.sidebar.sections.payroll')}</h2>
@@ -33,7 +33,7 @@ export function PayrollPage() {
 
       {/* Özet Kartları (Summary Widgets) */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        <Card className="rounded-xl shadow-sm">
+        <Card className="rounded-sm shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Güncel Net Maaş</CardTitle>
             <Wallet className="h-4 w-4 text-primary" />
@@ -44,7 +44,7 @@ export function PayrollPage() {
           </CardContent>
         </Card>
 
-        <Card className="rounded-xl shadow-sm">
+        <Card className="rounded-sm shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Sonraki Ödeme Tarihi</CardTitle>
             <CalendarDays className="h-4 w-4 text-emerald-500" />
@@ -55,7 +55,7 @@ export function PayrollPage() {
           </CardContent>
         </Card>
 
-        <Card className="rounded-xl shadow-sm">
+        <Card className="rounded-sm shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Son Kesintiler</CardTitle>
             <BadgeDollarSign className="h-4 w-4 text-rose-500" />
@@ -68,7 +68,7 @@ export function PayrollPage() {
       </div>
 
       {/* Bordro Geçmişi Listesi */}
-      <Card className="rounded-xl shadow-sm overflow-hidden border border-border">
+      <Card className="rounded-sm shadow-sm overflow-hidden border border-border">
         <CardHeader className="bg-muted/20 border-b border-border/50 pb-4">
           <CardTitle>Bordro Geçmişi</CardTitle>
           <CardDescription>Geçmiş aylara ait maaş bordrolarınızı görüntüleyebilir ve indirebilirsiniz.</CardDescription>
